@@ -135,7 +135,7 @@ class LocationManagerClient implements LocationClient, LocationListener {
       if (providers.size() > 0) provider = providers.get(0);
     }
 
-    return LocationManager.NETWORK_PROVIDER;
+    return provider;
   }
 
   private static float accuracyToFloat(LocationAccuracy accuracy) {
@@ -204,8 +204,7 @@ class LocationManagerClient implements LocationClient, LocationListener {
     LocationAccuracy locationAccuracy =
         this.locationOptions != null ? this.locationOptions.getAccuracy() : LocationAccuracy.best;
 
-//    this.currentLocationProvider = getBestProvider(this.locationManager, locationAccuracy);
-    this.currentLocationProvider = getBestPosition(this.context);
+    this.currentLocationProvider = getBestPosition();
 
     if (this.currentLocationProvider.trim().isEmpty()) {
       errorCallback.onError(ErrorCodes.locationServicesDisabled);
