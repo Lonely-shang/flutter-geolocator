@@ -186,7 +186,9 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
       return;
     }
 
-    final position = await geolocatorAndroid.getCurrentPosition();
+    final position = await geolocatorAndroid.getCurrentPosition(locationSettings: LocationSettings(
+      accuracy: LocationAccuracy.high
+    ));
     _updatePositionList(
       _PositionItemType.position,
       position.toString(),
@@ -353,7 +355,7 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
   }
 
   void _getLastKnownPosition() async {
-    final position = await geolocatorAndroid.getLastKnownPosition();
+    final position = await geolocatorAndroid.getLastKnownPosition(forceLocationManager: true);
     if (position != null) {
       _updatePositionList(
         _PositionItemType.position,

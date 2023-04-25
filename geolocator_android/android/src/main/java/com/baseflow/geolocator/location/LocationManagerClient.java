@@ -8,6 +8,11 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 
@@ -23,6 +28,8 @@ class LocationManagerClient implements LocationClient, LocationListener {
 
   private static final long TWO_MINUTES = 120000;
   private final LocationManager locationManager;
+
+  private final ConnectivityManager connectivityManager;
   private final NmeaClient nmeaClient;
   @Nullable private final LocationOptions locationOptions;
   public Context context;
@@ -36,6 +43,7 @@ class LocationManagerClient implements LocationClient, LocationListener {
   public LocationManagerClient(
       @NonNull Context context, @Nullable LocationOptions locationOptions) {
     this.locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+    this.connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
     this.locationOptions = locationOptions;
     this.context = context;
     this.nmeaClient = new NmeaClient(context, locationOptions);
@@ -71,6 +79,22 @@ class LocationManagerClient implements LocationClient, LocationListener {
     if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) return true;
 
     return false;
+  }
+
+  private String getBestPosition() {
+      Boolean isNetwork = false;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          Network nw = this.connectivityManager.getActiveNetwork();
+          if (nw != null) {
+              NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(nw);
+              isNetwork = actNw != null;
+          };
+      } else {
+          NetworkInfo activeNetworkInfo = this.connectivityManager.getActiveNetworkInfo();
+          isNetwork = activeNetworkInfo != null && activeNetworkInfo.isConnected();
+      }
+
+      return isNetwork ? LocationManager.NETWORK_PROVIDER : LocationManager.GPS_PROVIDER;
   }
 
   private static String getBestProvider(
@@ -111,12 +135,13 @@ class LocationManagerClient implements LocationClient, LocationListener {
       if (providers.size() > 0) provider = providers.get(0);
     }
 
-    return provider;
+    return LocationManager.NETWORK_PROVIDER;
   }
 
   private static float accuracyToFloat(LocationAccuracy accuracy) {
     switch (accuracy) {
       case lowest:
+          return 1000;
       case low:
         return 500;
       case medium:
@@ -179,7 +204,8 @@ class LocationManagerClient implements LocationClient, LocationListener {
     LocationAccuracy locationAccuracy =
         this.locationOptions != null ? this.locationOptions.getAccuracy() : LocationAccuracy.best;
 
-    this.currentLocationProvider = getBestProvider(this.locationManager, locationAccuracy);
+//    this.currentLocationProvider = getBestProvider(this.locationManager, locationAccuracy);
+    this.currentLocationProvider = getBestPosition(this.context);
 
     if (this.currentLocationProvider.trim().isEmpty()) {
       errorCallback.onError(ErrorCodes.locationServicesDisabled);
@@ -196,8 +222,9 @@ class LocationManagerClient implements LocationClient, LocationListener {
     this.isListening = true;
     this.nmeaClient.start();
     this.locationManager.requestLocationUpdates(
-        this.currentLocationProvider, timeInterval, distanceFilter, this, Looper.getMainLooper());
+        currentLocationProvider, timeInterval, distanceFilter, this, Looper.getMainLooper());
   }
+
 
   @SuppressLint("MissingPermission")
   @Override

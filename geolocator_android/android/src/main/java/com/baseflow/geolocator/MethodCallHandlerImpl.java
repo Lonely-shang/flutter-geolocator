@@ -209,7 +209,7 @@ class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
 
     @SuppressWarnings("unchecked")
     Map<String, Object> map = (Map<String, Object>) call.arguments;
-    boolean forceLocationManager = false;
+    boolean forceLocationManager = true;
     if (map != null && map.get("forceLocationManager") != null) {
       forceLocationManager = (boolean) map.get("forceLocationManager");
     }

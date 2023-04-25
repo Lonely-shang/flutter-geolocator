@@ -27,7 +27,7 @@ dependencies:
 
   # The following adds the URL Launcher plugin which is used by
   # the demo application to open the links in the web browser.
-  url_launcher: ^6.0.0-nullsafety.1
+#  url_launcher: ^6.0.0-nullsafety.1
 
 dev_dependencies:
   flutter_test:
@@ -45,5 +45,5 @@ flutter:
   assets:
     - res/images/baseflow_logo_def_light-02.png
     - res/images/poweredByBaseflowLogoLight@3x.png
-    - packages/baseflow_plugin_template/logo.png
-    - packages/baseflow_plugin_template/poweredByBaseflow.png
+#    - packages/baseflow_plugin_template/logo.png
+#    - packages/baseflow_plugin_template/poweredByBaseflow.png
